@@ -11,20 +11,6 @@ def read_header(f):
     :rtype: (arr [head_struct])
 
     """
-    # magic = np.fromfile(f, dtype=np.uint64, count=1)[0]
-    # snap = np.fromfile(f, dtype=np.int64, count=1)[0]
-    # chunk = np.fromfile(f, dtype=np.int64, count=1)[0]
-    # scale = np.fromfile(f, dtype=np.float32, count=1)[0]
-    # Om = np.fromfile(f, dtype=np.float32, count=1)[0]
-    # Ol = np.fromfile(f, dtype=np.float32=1)[0]
-    # h0 = np.fromfile(f, dtype=np.float32, count=1)[0]
-    # bounds = np.fromfile(f, dtype=np.float32, count=6)
-    # num_halos = np.fromfile(f, dtype=np.int64, count=1)[0]
-    # num_parts = np.fromfile(f, dtype=np.int64, count=1)[0]
-    # box_size = np.fromfile(f, dtype=np.float32, count=1)[0]
-    # part_mass = np.fromfile(f, dtype=np.float32, count=1)[0]
-    # part_type = np.fromfile(f, dtype=np.int64, count=1)[0]
-
     header = np.fromfile(f, dtype=head_struct, count=1)
 
     assert(header['particle_type'] > 0), '-- error: no particle ID information in outputs'
@@ -69,21 +55,18 @@ def read_binary_haloes(root, iout, sort_key='m'):
     """Reads in all of the halo_<iout>.*.bin files produced by
     rockstar.  Extracts the header information (defined in
     io/io_internal.h) halo objects (defined in halo.h) and particle
-    IDs for each halo.  Also returns the header for the final object
-    read, so don't trust the file-specific values in there, useful for
-    cosmological parameters.
+    IDs for each halo sorted into ascending order.  Also returns the
+    header for the final object read, so don't trust the file-specific
+    values in there, useful for cosmological parameters.
 
     Example
     -------
 
-    iout = 13
-    root = './test_data/biased/'
+    iout = 13 root = './test_data/biased/'
 
     h, pid = read_binary_haloes(root, iout)
 
-    for ih in h:
-       print(ih['m'])
-
+    for ih in h: print(ih['m'])
 
     :param root: (str) path to halo output files (not including the
         actual halo filenames)
@@ -104,20 +87,29 @@ def read_binary_haloes(root, iout, sort_key='m'):
     for j, ifn in enumerate(fns):
         with open(ifn, 'r') as f:
             header = read_header(f)
-            cur_haloes = np.empty(header['num_halos'], dtype='object')
-            cur_part_ids = np.empty(header['num_halos'], dtype='object')
-            cur_sort_vals = np.empty(header['num_halos'], dtype='object')
             
+            # These store each halo for this file
+            cur_haloes = np.empty(header['num_halos'], dtype='object')
+            cur_part_ids = np.zeros(header['num_halos'], dtype='object')
+            cur_sort_vals = np.empty(header['num_halos'], dtype='object')
+
+            # Need two loops here because the halo data are stored
+            # first, then the particle IDs follow
             for i in range(header['num_halos'][0]):
                 cur_haloes[i] = read_halo(f)
                 cur_sort_vals[i] = cur_haloes[i][sort_key]
-                
+
             for i in range(header['num_halos'][0]):
                 cur_part_ids[i] = read_ids(f, cur_haloes[i]['num_p'][0])
                 
-            # Are IDs unique? This probably isn't that useful, since
-            # IDs could also be duplicated outside this proccessor.
-            assert(len(np.unique(cur_part_ids[i])) == len(cur_part_ids[i])), '-- error: particle IDs not unique in this halo'
+                # # Are IDs unique? This probably isn't that useful, since
+                # # IDs could also be duplicated outside this proccessor.
+                # assert(len(np.unique(cur_part_ids[i])) == len(cur_part_ids[i])), '-- error: particle IDs not unique in this halo'
+                
+                # Instead, do a sort on the particle IDs then we can just
+                # check whether the first one is positive
+                cur_part_ids[i] = np.sort(cur_part_ids[i])
+                assert(cur_part_ids[i][0] > 0), '-- error: some particle IDs < 1: {0:d}'.format(cur_part_ids[i][0])
 
             haloes[j] = cur_haloes
             part_ids[j] = cur_part_ids
