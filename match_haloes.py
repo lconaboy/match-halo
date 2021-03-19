@@ -1,9 +1,3 @@
-# import os
-# import sys
-# import glob
-# import numpy as np
-# from rockstar_structs import head_struct, halo_struct
-
 from read_rockstar import *
 
     
