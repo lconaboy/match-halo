@@ -51,7 +51,7 @@ def read_ids(f, n):
     return ids
 
 
-def read_binary_haloes(root, iout, sort_key='m'):
+def read_binary_haloes(root, iout, sort_key='m', most_bound=False):
     """Reads in all of the halo_<iout>.*.bin files produced by
     rockstar.  Extracts the header information (defined in
     io/io_internal.h) halo objects (defined in halo.h) and particle
@@ -101,11 +101,11 @@ def read_binary_haloes(root, iout, sort_key='m'):
 
             for i in range(header['num_halos'][0]):
                 cur_part_ids[i] = read_ids(f, cur_haloes[i]['num_p'][0])
+
                 
-                # # Are IDs unique? This probably isn't that useful, since
-                # # IDs could also be duplicated outside this proccessor.
-                # assert(len(np.unique(cur_part_ids[i])) == len(cur_part_ids[i])), '-- error: particle IDs not unique in this halo'
-                
+                if most_bound is not False:
+                    pass
+                                
                 # Instead, do a sort on the particle IDs then we can just
                 # check whether the first one is positive
                 cur_part_ids[i] = np.sort(cur_part_ids[i])
