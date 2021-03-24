@@ -49,25 +49,51 @@ fig.savefig('match_test_m.pdf', bbox_inches='tight')
 
 # Plot positions
 # xyz_str = 'xyz'
-xyz_str = ['x', 'y', 'z', 'vx', 'vy', 'vz']
-for ii, ix in enumerate(xyz_str):
+def plot_pos(inds1, inds2, p='x'):
+    if p == 'x':
+        xyz_str = ['x', 'y', 'z']
+        i0 = 0  # offset in pos array
+        units = ' (h$^{{-1}}$ Mpc)'
+        label = 's'
+    else:
+        xyz_str = ['vx', 'vy', 'vz']
+        i0 = 3
+        units = ' (km/s)'
+        label = 'v'
+    
+    s = np.zeros((mf.shape[0], 2))  # magnitude
+    for ii, ix in enumerate(xyz_str):
+        fig, ax = plt.subplots(figsize=(7, 6))
+        xy = np.zeros((mf.shape[0], 2))
+        for i in range(mf.shape[0]):
+            xy[i] = [inds1[i]['pos'][0][ii+i0], inds2[i]['pos'][0][ii+i0]]
+            s[i] += xy[i] ** 2.
+        #xy = np.abs(xy)
+        xl = [np.min(xy), np.max(xy)]
+        ax.plot(xl, xl, c='k')
+        sc = ax.scatter(xy[:, 0], xy[:, 1], cmap='viridis', c=mf)
+        cb = fig.colorbar(mappable=sc)
+        ax.set_xlabel(ix+units)
+        ax.set_ylabel(ix+units)
+        ax.set_xlim(xl)
+        ax.set_ylim(xl)
+        cb.set_label('matched fraction')
+        fig.savefig('match_test_'+ix+'.pdf', bbox_inches='tight')
+
     fig, ax = plt.subplots(figsize=(7, 6))
-    xy = np.zeros((mf.shape[0], 2))
-    for i in range(mf.shape[0]):
-        xy[i] = [inds1[i]['pos'][0][ii], inds2[i]['pos'][0][ii]]
-    #xy = np.abs(xy)
+    xy = np.sqrt(s)
+    ix = label
     xl = [np.min(xy), np.max(xy)]
     ax.plot(xl, xl, c='k')
     sc = ax.scatter(xy[:, 0], xy[:, 1], cmap='viridis', c=mf)
     cb = fig.colorbar(mappable=sc)
-    if 'v' in ix:
-        ax.set_xlabel(ix+' (km/s)')
-        ax.set_ylabel(ix+' (km/s)')
-    else:
-        ax.set_xlabel(ix+' (h$^{{-1}}$ Mpc)')
-        ax.set_ylabel(ix+' (h$^{{-1}}$ Mpc)')
-    
+    ax.set_xlabel(ix+'$_1$' + units)
+    ax.set_ylabel(ix+'$_2$' + units)
     ax.set_xlim(xl)
     ax.set_ylim(xl)
     cb.set_label('matched fraction')
     fig.savefig('match_test_'+ix+'.pdf', bbox_inches='tight')
+
+
+plot_pos(inds1, inds2, p='x')
+plot_pos(inds1, inds2, p='v')
