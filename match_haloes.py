@@ -7,7 +7,7 @@ from read_rockstar import *
 match_frac = 0.5
 match_num = 50
 
-def run_match_two(roots, iouts):
+def run_binary_match_two(roots, iouts):
     root1 = roots[0]
     root2 = roots[1]
     iout1 = iouts[0]
@@ -16,6 +16,23 @@ def run_match_two(roots, iouts):
     print('-- reading in haloes')
     h1, pid1, header1 = read_binary_haloes(root1, iout1)
     h2, pid2, header2 = read_binary_haloes(root2, iout2)
+
+    match = match_two([h1, h2], [pid1, pid2])
+
+    # Write matched array to file
+    write_match(iout1, match)
+
+
+    
+def run_ascii_match_two(roots, iouts):
+    root1 = roots[0]
+    root2 = roots[1]
+    iout1 = iouts[0]
+    iout2 = iouts[1]
+
+    print('-- reading in haloes')
+    h1, pid1 = read_particle_haloes(root1, iout1)
+    h2, pid2 = read_particle_haloes(root2, iout2)
 
     match = match_two([h1, h2], [pid1, pid2])
 
@@ -88,7 +105,7 @@ if __name__ == '__main__':
     iouts = [iout1, iout2]
 
     s = time.time()
-    run_match_two(roots, iouts)
+    run_ascii_match_two(roots, iouts)
     f = time.time()
 
     print('Took', f-s, 'seconds')

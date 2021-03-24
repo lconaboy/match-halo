@@ -36,3 +36,19 @@ halo_struct = np.dtype([('id', np.int64), ('pos', np.float32, (6)),
                         ('min_pos_err', np.float32),
                         ('min_vel_err', np.float32),
                         ('min_bulkvel_err', np.float32)], align=True)
+
+ascii_halo_struct = np.dtype([('id', np.int64), ('internal_id', np.int64),
+                              ('num_p', np.int64), ('mvir', np.float32),
+                              ('mbound_vir', np.float32), ('rvir', np.float32),
+                              ('vmax', np.float32), ('rvmax', np.float32),
+                              ('vrms', np.float32), ('pos', np.float32, (6)),
+                              ('J', np.float32, (3)), ('energy', np.float32),
+                              ('spin', np.float32)])
+
+
+ascii_part_struct = np.dtype([('pos', np.float32, (6)), ('particle_id', np.int64),
+                              ('assigned_internal_haloid', np.int64),
+                              ('internal_haloid', np.int64),
+                              ('external_haloid', np.int64),
+                              ('energy', np.float32)])
+

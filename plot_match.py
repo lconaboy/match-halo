@@ -27,10 +27,12 @@ for i in range(h1.shape[0]):
 j = 0
 for i in range(h2.shape[0]):
     if h2[i]['id'] in m2:
-        inds2[j] = h2[i]     
+        inds2[j] = h2[i]
         j += 1
-        
-fig, ax = plt.subplots(figsize=(6.5, 6))
+
+
+# Plot mass
+fig, ax = plt.subplots(figsize=(7, 6))
 xy = np.zeros((mf.shape[0], 2))
 for i in range(mf.shape[0]):
     xy[i] = [inds1[i]['m'], inds2[i]['m']]
@@ -43,4 +45,29 @@ ax.set_ylabel('M$_{{2}}$ (h$^{{-1}}$ M$_\\odot$)')
 ax.set_xlim(xl)
 ax.set_ylim(xl)
 cb.set_label('matched fraction')
-fig.savefig('match_test.pdf', bbox_inches='tight')
+fig.savefig('match_test_m.pdf', bbox_inches='tight')
+
+# Plot positions
+# xyz_str = 'xyz'
+xyz_str = ['x', 'y', 'z', 'vx', 'vy', 'vz']
+for ii, ix in enumerate(xyz_str):
+    fig, ax = plt.subplots(figsize=(7, 6))
+    xy = np.zeros((mf.shape[0], 2))
+    for i in range(mf.shape[0]):
+        xy[i] = [inds1[i]['pos'][0][ii], inds2[i]['pos'][0][ii]]
+    #xy = np.abs(xy)
+    xl = [np.min(xy), np.max(xy)]
+    ax.plot(xl, xl, c='k')
+    sc = ax.scatter(xy[:, 0], xy[:, 1], cmap='viridis', c=mf)
+    cb = fig.colorbar(mappable=sc)
+    if 'v' in ix:
+        ax.set_xlabel(ix+' (km/s)')
+        ax.set_ylabel(ix+' (km/s)')
+    else:
+        ax.set_xlabel(ix+' (h$^{{-1}}$ Mpc)')
+        ax.set_ylabel(ix+' (h$^{{-1}}$ Mpc)')
+    
+    ax.set_xlim(xl)
+    ax.set_ylim(xl)
+    cb.set_label('matched fraction')
+    fig.savefig('match_test_'+ix+'.pdf', bbox_inches='tight')
