@@ -24,15 +24,15 @@ def run_binary_match_two(roots, iouts):
 
 
     
-def run_ascii_match_two(roots, iouts):
+def run_ascii_match_two(roots, iouts, most_bound=50):
     root1 = roots[0]
     root2 = roots[1]
     iout1 = iouts[0]
     iout2 = iouts[1]
 
     print('-- reading in haloes')
-    h1, pid1 = read_particle_haloes(root1, iout1)
-    h2, pid2 = read_particle_haloes(root2, iout2)
+    h1, pid1 = read_particle_haloes(root1, iout1, most_bound=most_bound)
+    h2, pid2 = read_particle_haloes(root2, iout2, most_bound=most_bound)
 
     match = match_two([h1, h2], [pid1, pid2])
 
