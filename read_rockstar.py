@@ -221,15 +221,19 @@ def read_particle_haloes(root, iout, sort_key='mvir', most_bound=50):
                 hid = cur_haloes[i]['id']
 
                 # Some of these haloes won't be printed out, so if
-                # they don't have a proper ID, skip them. Also, some
-                # of the haloes won't have very many particles so skip
-                # those too.
-                if (hid == -1) or (len(phids) < most_bound):
+                # they don't have a proper ID, skip them. 
+                if hid == -1:
                     continue
                 
                 hp = cur_haloes[i]['pos'][0][0:3]  # halo position (Mpc/h)
                 hv = cur_haloes[i]['pos'][0][3:6]  # halo velocity (km/s)
                 p = parts[phids == hid, :]  # particles for this halo
+
+                # Also, some of the haloes won't have very many
+                # particles so skip those too.
+                if (len(p) < most_bound):
+                    continue
+                
                 # ratio of (v_i/v_esc)^2
                 pvvr = most_vel_bound(hp, hv, p, cur_haloes[i]['vmax'],
                                       cur_haloes[i]['rvmax'])
