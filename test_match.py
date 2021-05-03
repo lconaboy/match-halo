@@ -42,7 +42,7 @@ plt.figure(figsize=(6, 6))
 bins = 10.**np.linspace(np.log10(2e5), np.log10(2e7), num=11)
 for f in ['unbiased', 'biased']:
     x = mvir[f]
-    y = fb[f]-fb['same_vtf']
+    y = (fb[f] / fb['same_vtf']) / fb['same_vtf']
     xb = 0.5 * (bins[1:] + bins[:-1])
     yb, _, _ = binned_statistic(x, y, statistic='mean', bins=bins)
     plt.scatter(x, y, marker='.', color=c_dict[f], label=f)
