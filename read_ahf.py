@@ -14,7 +14,7 @@ def read_ahf_particles(path, most_bound=0):
     fns = glob.glob(path)
 
     if len(fns) < 1:
-        print('-- [error] all_{0:03d}.AHF_particles not found')
+        print('-- [error] {0} not found'.format(path))
         sys.exit()
         
     fn = fns[0]
