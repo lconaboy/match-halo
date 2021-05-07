@@ -35,14 +35,17 @@ def write_match(iout, match):
     np.savetxt('match_{0:d}.list'.format(iout), match, fmt='%d %d %.4f')
 
 
-def write_match_three(iout, match, match_frac, fields=None):
+def write_match_three(iout, match, match_frac, fields=None,
+                      subhaloes=False):
     """Writes matched array to an ASCII file.
 
     :param iout: (int) output number
     :param match: (arr) matched outputs, first column is halo ID,
         second column is halo ID, third column is halo ID and final
         column is match fraction
-
+    :param subhaloes: (bool) are we looking at just haloes (False) or
+        just subhaloes (True)?
+w
     :returns: None
 
     :rtype: (NoneType)
@@ -57,11 +60,12 @@ def write_match_three(iout, match, match_frac, fields=None):
     out = np.zeros((match_frac.shape[0]), dtype=dtype_match3)
     for i, f in enumerate(fields):
         out[f] = match[:, i]
-        out[f] = match[:, i]
-        out[f] = match[:, i]
+        # out[f] = match[:, i]
+        # out[f] = match[:, i]
     out['match_frac'] = match_frac
-        
-    np.savetxt('match_{0:d}.list'.format(iout), out, fmt='%d %d %d %.4f',
+
+    match_fn = get_match_fn(iout, subhaloes)
+    np.savetxt(match_fn, out, fmt='%d %d %d %.4f',
                header=header)
 
 
@@ -82,10 +86,12 @@ def read_match(iout):
     return match
 
 
-def read_match3(iout):
+def read_match3(iout, subhaloes):
     """Reads matched array from ASCII file.
 
     :param iout: (int) output number
+    :param subhaloes: (bool) are we looking at just haloes (False) or
+        just subhaloes (True)?
 
     :returns: matched outputs, first column is halo ID, second
         column is halo ID and final column is match fraction
@@ -94,8 +100,8 @@ def read_match3(iout):
     """
 
     # First regenerate the field names from the header
-    match_fn = get_match_fn(iout)
-    fields = read_header(iout)
+    match_fn = get_match_fn(iout, subhaloes)
+    fields = read_header(iout, subhaloes)
     dtype_match3 = get_dtype_match3(fields)
     # Now load the data
     match = np.genfromtxt(match_fn, dtype=dtype_match3)
@@ -103,8 +109,8 @@ def read_match3(iout):
     return match
 
 
-def read_header(iout):
-    match_fn = get_match_fn(iout)
+def read_header(iout, subhaloes):
+    match_fn = get_match_fn(iout, subhaloes)
     with open(match_fn, 'r') as f:
         header = f.readline()
         
@@ -113,5 +119,7 @@ def read_header(iout):
     return fields
 
 
-def get_match_fn(iout):
-    return 'match_{0:d}.list'.format(iout)
+def get_match_fn(iout, subhaloes=False):
+    obj = 'haloes'
+    if subhaloes: obj = 'subhaloes'
+    return 'match_{0}_{1:d}.list'.format(obj, iout)

@@ -57,7 +57,8 @@ def run_ahf_match_two(roots, iouts, bbox=None, most_bound=100):
     write_match(iout1, match)
 
 
-def run_ahf_match_three(roots, iouts, bbox=None, most_bound=100, fields=None):
+def run_ahf_match_three(roots, iouts, bsph=None, most_bound=100,
+                        fields=None, subhaloes=False):
     root1 = roots[0]
     root2 = roots[1]
     root3 = roots[2]
@@ -66,38 +67,37 @@ def run_ahf_match_three(roots, iouts, bbox=None, most_bound=100, fields=None):
     iout3 = iouts[2]
 
     print('-- reading in haloes')
-    h1, pid1 = read_ahf_haloes(root1, iout1, bbox=bbox, most_bound=most_bound)
-    h2, pid2 = read_ahf_haloes(root2, iout2, bbox=bbox, most_bound=most_bound)
-    h3, pid3 = read_ahf_haloes(root3, iout3, bbox=bbox, most_bound=most_bound)
+    h1, pid1 = read_ahf_haloes(root1, iout1, bsph=bsph, most_bound=most_bound,
+                               subhaloes=subhaloes)
+    h2, pid2 = read_ahf_haloes(root2, iout2, bsph=bsph, most_bound=most_bound,
+                               subhaloes=subhaloes)
+    h3, pid3 = read_ahf_haloes(root3, iout3, bsph=bsph, most_bound=most_bound,
+                               subhaloes=subhaloes)
 
+    # Run two match_twos then compare them
     match2, matchf2 = match_two([h1, h2], [pid1, pid2])  # match between sim 1 and 2
     match3, matchf3 = match_two([h1, h3], [pid1, pid3])  # match between sim 1 and 3
 
+    # Check whether we actually found any matches
+    if (len(match2) < 1) or (len(match3) < 1):
+        print('-- some simulations found no matches, finishing')
+        sys.exit()
+
+    
     max_match = np.max([match2.max(), match3.max()])
 
-    # if match2.shape[0] > match3.shape[0]:
-    #     match3_new = np.zeros(match2.shape, dtype=int) - 1
-    #     match3_new[0:match3.shape[0], :] = match3
-    #     match3 = match3_new
-    #     match = np.zeros((match2.shape[0], 3), dtype=int)  # all
-    #     matchf = np.zeros(match2.shape[0], dtype=float)  # all
-    # else:
-    #     match2_new = np.zeros(match3.shape, dtype=int) - 1
-    #     match2_new[0:match2.shape[0], :] = match2
-    #     match2 = match2_new
-    #     match = np.zeros((match3.shape[0], 3), dtype=int)  # all
-    #     matchf = np.zeros(match3.shape[0], dtype=float)  # all
-
+    # Find the indices of match 2 that are in match 3
     ii2 = np.isin(match2[:, 0], match3[:, 0])
+    # vice versa
     ii3 = np.isin(match3[:, 0], match2[:, 0])
 
+    # Pick out these values
     match2_new = match2[ii2, :]
     matchf2_new = matchf2[ii2]
-    
     match3_new = match3[ii3, :]
     matchf3_new = matchf3[ii3]
 
-    # Sort on sim 1 IDs
+    # Sort on sim 1 IDs (first column for both is sim 1)
     ii2 = np.argsort(match2_new[:, 0])
     ii3 = np.argsort(match3_new[:, 0])
     match2_new = match2_new[ii2, :]
@@ -110,7 +110,8 @@ def run_ahf_match_three(roots, iouts, bbox=None, most_bound=100, fields=None):
     matchf = np.min(np.array([matchf2_new, matchf3_new]).T, axis=1)
     
     # Write matched array to file
-    write_match_three(iout=iout1, match=match, match_frac=matchf, fields=fields)
+    write_match_three(iout=iout1, match=match, match_frac=matchf,
+                      fields=fields, subhaloes=subhaloes)
 
     
 def match_two(hs, pids):
@@ -144,12 +145,6 @@ def match_two(hs, pids):
             # quicker!
             nm = np.sum(np.isin(pid1[i], pid2[j], assume_unique=True),
                         dtype=int)
-        
-            # print('pid1')
-            # print(pid1[i])
-
-            # print('pid2')
-            # print(pid2[j])
 
             # Calculate the matched fraction for this halo, use the
             # largest num particles in order to get the smallest
@@ -162,7 +157,7 @@ def match_two(hs, pids):
             # print('mf:', mf)
 
             if mf > match_frac:
-                print('---- found a match!')
+                print('------ found a match!')
                 match[k, 0] = h1[i]['id']
                 match[k, 1] = h2[j]['id']
                 matchf[k] = mf
