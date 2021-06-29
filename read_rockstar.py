@@ -1,6 +1,5 @@
 import os
 import glob
-import numba
 from rockstar_structs import *
 
 
@@ -169,12 +168,13 @@ def read_particle_haloes(root, iout, sort_key='mvir', most_bound=50):
         # place to look.
         cur_haloes = np.empty(10000, dtype=object)
         cur_sort_vals = np.empty(10000, dtype=object)
-        parts = np.zeros((1000000, 11), dtype=float)
+        parts = np.zeros((10000000, 11), dtype=float)
         # Get number of lines read
         nhead = 0
         nhalo = 0
         npart = 0
         with open(ifn, 'r') as f:
+            # print(ifn)
             # Read up until the halo table begins
             l = ''
             while l != '#Halo table begins here:\n':
@@ -217,7 +217,7 @@ def read_particle_haloes(root, iout, sort_key='mvir', most_bound=50):
             # Loop over haloes and assign particles to haloes, keeping
             # only the most_bound particles
             for i in range(cur_haloes.shape[0]):
-                print('-- working on halo', i)
+                # print('-- working on halo', i)
                 hid = cur_haloes[i]['id']
 
                 # Some of these haloes won't be printed out, so if
@@ -240,9 +240,9 @@ def read_particle_haloes(root, iout, sort_key='mvir', most_bound=50):
                 
                 # Sort based on ratio of (v_i/v_esc)^2
                 idxs = np.argsort(pvvr)
-                print('------ v/vesc min: {0:.3f} max: {1:.3f}'.format(pvvr[idxs[0]], pvvr[idxs[-1]]))
+                # print('------ v/vesc min: {0:.3f} max: {1:.3f}'.format(pvvr[idxs[0]], pvvr[idxs[-1]]))
                 
-                cur_part_ids[i] = p[idxs[0:most_bound], 9]
+                cur_part_ids[i] = p[idxs[0:most_bound], 6]  # particle_ids
                 keep_haloes[i] = True
                 
         del parts
